@@ -584,6 +584,9 @@ abstract class REST_Controller extends CI_Controller {
                 case 'session':
                     $this->_check_php_session();
                     break;
+                case 'token':
+                    $this->_check_token();
+                    break;
             }
             if ($this->config->item('rest_ip_whitelist_enabled') === TRUE)
             {
@@ -2023,6 +2026,41 @@ abstract class REST_Controller extends CI_Controller {
                 $this->config->item('rest_message_field_name') => $this->lang->line('text_rest_unauthorized')
             ], self::HTTP_UNAUTHORIZED);
         }
+    }
+
+    /**
+     * Check to see if the user is logged in using the given token
+     *
+     * @access protected
+     * @return void
+     */
+    protected function _check_token()
+    {
+        // Get passed auth token
+        $name = $this->config->item('rest_token_name');
+        $token = ! empty( $this->_args[$name]) ? $this->_args[$name] : NULL;
+
+        if ( ! empty($token) && $row = $this->rest->db->where('token', $token)->get($this->config->item('rest_tokens_table'))->row() )
+        {
+            $this->auth_token = $row;
+        }
+        else
+        {
+            // Display an error response
+            $this->response([
+                $this->config->item('rest_status_field_name') => FALSE,
+                $this->config->item('rest_message_field_name') => $this->lang->line('text_rest_unauthorized')
+            ], self::HTTP_UNAUTHORIZED);
+        }
+
+    }
+
+    /**
+     * @return token
+     */
+    protected function get_auth_token()
+    {
+        return !empty( $this->auth_token )? $this->auth_token : NULL;
     }
 
     /**

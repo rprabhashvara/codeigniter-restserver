@@ -381,6 +381,72 @@ $config['rest_key_name'] = 'X-API-KEY';
 
 /*
 |--------------------------------------------------------------------------
+| REST Auth Tokens Table Name
+|--------------------------------------------------------------------------
+|
+| The table name in your database that stores Auth tokens
+|
+*/
+$config['rest_tokens_table'] = 'tokens';
+
+/*
+|--------------------------------------------------------------------------
+| REST Enable Tokens
+|--------------------------------------------------------------------------
+|
+| When set to TRUE, the REST API will look for a column name called 'token'.
+| If no token is provided, the request will result in an error. To override the
+| column name see 'rest_token_column'
+|
+| Default table schema:
+|   CREATE TABLE `tokens` (
+|       `id` INT(11) NOT NULL AUTO_INCREMENT,
+|       `user_id` INT(11) NOT NULL,
+|       `token` VARCHAR(100) NOT NULL,
+|       `date_created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+|       `date_expiry` TIMESTAMP,
+|       PRIMARY KEY (`id`)
+|   ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+|
+*/
+$config['rest_enable_tokens'] = FALSE;
+
+/*
+|--------------------------------------------------------------------------
+| REST Table Token Column Name
+|--------------------------------------------------------------------------
+|
+| If not using the default table schema in 'rest_enable_tokens', specify the
+| column name to match e.g. my_token
+|
+*/
+$config['rest_token_column'] = 'token';
+
+/*
+|--------------------------------------------------------------------------
+| REST Token Length
+|--------------------------------------------------------------------------
+|
+| Length of the created tokens. Check your default database schema on the
+| maximum length allowed
+|
+| Note: The maximum length is 100
+|
+*/
+$config['rest_token_length'] = 100;
+
+/*
+|--------------------------------------------------------------------------
+| REST Auth Token Variable
+|--------------------------------------------------------------------------
+|
+| Custom header to specify the Auth token
+|
+*/
+$config['rest_token_name'] = 'X-AUTH-TOKEN';
+
+/*
+|--------------------------------------------------------------------------
 | REST Enable Logging
 |--------------------------------------------------------------------------
 |
