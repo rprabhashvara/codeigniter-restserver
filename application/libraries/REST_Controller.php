@@ -2034,26 +2034,52 @@ abstract class REST_Controller extends CI_Controller {
      * @access protected
      * @return void
      */
-    protected function _check_token()
-    {
-        // Get passed auth token
-        $name = $this->config->item('rest_token_name');
-        $token = ! empty( $this->_args[$name]) ? $this->_args[$name] : NULL;
+     protected function _check_token()
+     {
+         $current_uri = $this->uri->uri_string();
+         $exclude_uris = $this->config->item('rest_token_exclude');
 
-        if ( ! empty($token) && $row = $this->rest->db->where('token', $token)->get($this->config->item('rest_tokens_table'))->row() )
-        {
-            $this->auth_token = $row;
-        }
-        else
-        {
-            // Display an error response
-            $this->response([
-                $this->config->item('rest_status_field_name') => FALSE,
-                $this->config->item('rest_message_field_name') => $this->lang->line('text_rest_unauthorized')
-            ], self::HTTP_UNAUTHORIZED);
-        }
+         if( in_array( $current_uri, $exclude_uris) || in_array( '/'.$current_uri, $exclude_uris) )
+         {
+           return;
+         }
 
-    }
+         // Get passed auth token
+         $name = $this->config->item('rest_token_name');
+         $token = ! empty( $this->_args[$name]) ? $this->_args[$name] : NULL;
+
+         if( $token )
+         {
+             $row = $this->rest->db->where('token', $token)->get($this->config->item('rest_tokens_table'))->row();
+         }
+
+         $token_expired = TRUE;
+         if( $row )
+         {
+             $current_time = strtotime('now');
+             $token_expire_time = strtotime($row->date_expiry);
+
+             if( $token_expire_time - $current_time > 0 )
+             {
+                 $token_expired = FALSE;
+             }
+         }
+
+         if( $row && ! $token_expired )
+         {
+             $this->auth_token = $row;
+             $this->update_auth_token_expiry($this->auth_token);
+         }
+         else
+         {
+             // Display an error response
+             $this->response([
+                 $this->config->item('rest_status_field_name') => FALSE,
+                 $this->config->item('rest_message_field_name') => $this->lang->line('text_rest_unauthorized')
+             ], self::HTTP_UNAUTHORIZED);
+         }
+
+     }
 
     /**
      * @return token
@@ -2061,6 +2087,26 @@ abstract class REST_Controller extends CI_Controller {
     protected function get_auth_token()
     {
         return !empty( $this->auth_token )? $this->auth_token : NULL;
+    }
+
+    /**
+     * Updates the given token's expiry time
+     * @return void
+     */
+    protected function update_auth_token_expiry($token){
+        if( !$token || !$this->config->item('rest_token_expire') || $this->config->item('rest_token_expire') <= 0 )
+        {
+          return;
+        }
+
+        $token_id = $token->id;
+
+        $new_expiry_time = strtotime('+'.$this->config->item('rest_token_expire').' minutes');
+        $new_expiry_time_formatted = date( "Y-m-d H:i:s", $new_expiry_time);
+
+        $data = array( 'date_expiry' => $new_expiry_time_formatted );
+        $this->rest->db->where('id', $token_id);
+        $this->rest->db->update('tokens', $data);
     }
 
     /**

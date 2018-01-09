@@ -108,6 +108,7 @@ $config['rest_realm'] = 'REST API';
 | 'digest'  More secured login
 | 'session' Check for a PHP session variable. See 'auth_source' to set the
 |           authorization key
+| 'token'   Token based authentication
 |
 */
 $config['rest_auth'] = FALSE;
@@ -444,6 +445,28 @@ $config['rest_token_length'] = 100;
 |
 */
 $config['rest_token_name'] = 'X-AUTH-TOKEN';
+
+/*
+|--------------------------------------------------------------------------
+| REST Auth Token exclude paths
+|--------------------------------------------------------------------------
+|
+| Array of uri s to exclude from token authentication
+|   eg: /api/users
+|       api/users
+|
+*/
+$config['rest_token_exclude'] = [];
+
+/*
+|--------------------------------------------------------------------------
+| REST Auth Token expire time
+|--------------------------------------------------------------------------
+|
+| Token expiry time in minutes
+|
+*/
+$config['rest_token_expire'] = 60;
 
 /*
 |--------------------------------------------------------------------------
